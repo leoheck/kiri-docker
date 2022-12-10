@@ -26,6 +26,6 @@ kiri PROJECT_PATH [KIRI_PARAMETERS]
 This example launches kiri (docker), passing the path of the project and kiri `-r` flag to clean old files.
 
 ```bash
-./kiri "/home/lheck/Documents/assoc-board" -r
+kiri "/home/lheck/Documents/assoc-board" -r
 ```
 
