@@ -18,6 +18,7 @@ RUN apt-get install -y software-properties-common
 RUN apt-get install -y x11-apps
 RUN apt-get install -y x11-xkb-utils
 RUN apt-get install -y xvfb
+RUN apt-get install -y libc-bin
 
 # install kiri dependencies
 RUN bash -c "$(/usr/bin/curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
