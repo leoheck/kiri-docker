@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# KIRI DOCKER
+
+# USAGE:
+#
+# kiri REPO_PATH [EXTRA_KIRI_ARGS]
+
+if [[ -z $1 ]]; then
+    echo "REPO_PATH is missing"
+    exit 1
+fi
+
+repo_path="$1"
+repo_dir=$(basename "${repo_path}")
+docker_repo_path="/home/kiri/${repo_dir}"
+
+# shift parameters
+shift
+# echo ${@}
+# exit
+
+
+xhost
+
+# # Allow X server connection
+xhost +local:*
+
+# Disallow X server connection
+xhost -local:*
+
+container_img=kiri:latest
+docker_name=kiri
+
+docker stop ${docker_name} &> /dev/null
+docker kill ${docker_name} &> /dev/null
+docker rm   ${docker_name} &> /dev/null
+
+# permission to launch gui (wayland?)
+xaut_hash=$(xauth list | grep "MIT-MAGIC-COOKIE-1" | head -1 | cut -d" " -f5)
+
+# Script to run when docker runs
+# read -r -d '' KIRI_SCRIPT << EOM
+# source /home/kiri/.bashrc
+# export DISPLAY=\":0.0\"
+# sudo Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
+# cd "${docker_repo_path}" || exit 1
+# ip_addr=\$(ip a | grep eth0 | grep inet | sed \'s/^[ ]\+//g\' | cut -d\' \' -f 2 | cut -d\'/\' -f1)
+# xvfb-run kiri --ip \${ip_addr}
+# bash -i
+# EOM
+
+# Launch the container and run the KIRI_SCRIPT inside the folder of the project
+docker run \
+    -e DISPLAY=${DISPLAY} \
+    --volume="${HOME}/.Xauthority:/kiri/.Xauthority:rw" \
+    --hostname="kiri" \
+    --net=bridge \
+    --name ${docker_name} \
+    --mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
+    -it ${container_img} \
+    bash -i -c "\
+        source /home/kiri/.profile ;\
+        source /home/kiri/.bashrc ;\
+        export DISPLAY=':0.0' ;\
+        cd \"${docker_repo_path}\" || exit 1 ;\
+        ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+        sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
+        xvfb-run kiri --ip \${ip_addr} \"${@}\"
+    "
+
+docker stop ${docker_name} &> /dev/null
