@@ -21,7 +21,7 @@ RUN apt-get install -y x11-apps
 RUN apt-get install -y x11-xkb-utils
 RUN apt-get install -y xvfb
 RUN apt-get install -y libc-bin
-run apt-get install -y fonts-powerline
+RUN apt-get install -y fonts-powerline
 
 # install latest kicad 6.0.*
 RUN sudo add-apt-repository -y ppa:kicad/kicad-6.0-releases
