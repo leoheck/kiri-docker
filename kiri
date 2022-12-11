@@ -4,11 +4,13 @@
 
 # USAGE:
 #
-# kiri REPO_PATH [EXTRA_KIRI_ARGS]
+# kiri [REPO_PATH [EXTRA_KIRI_ARGS]]
 
-if [[ -z $1 ]]; then
+JUST_RUN_CONTAINER=0
+
+if [[ -z ${1} ]]; then
     echo "REPO_PATH is missing"
-    exit 1
+    JUST_RUN_CONTAINER=1
 fi
 
 repo_path="${1}"
@@ -20,43 +22,67 @@ shift
 kiri_params="$@"
 
 container_img=kiri:latest
-container_tag=kiri2
-container_id=$(docker ps -aqf "name=${container_tag}")
+container_tag=kiri_container
 
 echo
 echo "Kiri Docker"
 echo "Image: ${container_img}"
-echo "Container: ${container_tag} (${container_id})"
-echo "Kiri params:" ${kiri_params}
+echo "Container: ${container_tag}"
+if [[ -n "${kiri_params}" ]]; then
+    echo "Kiri params: ${kiri_params}"
+fi
 
-docker stop ${container_tag}  &> /dev/null
-docker kill ${container_tag}  &> /dev/null
-docker rm -f ${container_tag} &> /dev/null
+# docker stop ${container_tag}  &> /dev/null
+# docker kill ${container_tag}  &> /dev/null
+# docker rm -f ${container_tag} &> /dev/null
 
-xhost &> /dev/null
-xhost +local:* &> /dev/null # Allow X server connection
-xhost -local:* &> /dev/null # Disallow X server connection
-xauth_hash=$(xauth list | grep "MIT-MAGIC-COOKIE-1" | head -1 | cut -d" " -f5)
+# Run these in the host machine
+XSOCK=/tmp/.X11-unix
+XAUTH=/tmp/.docker.xauth
+xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
 
-# run the container launching kiri
-docker run \
-    -e DISPLAY=${DISPLAY} \
-    --volume="${HOME}/.Xauthority:/kiri/.Xauthority:rw" \
-    --hostname="kiri" \
-    --net=bridge \
-    --name ${container_tag} \
-    --mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
-    -it ${container_img} \
-    bash -i -c "\
-        source /home/kiri/.profile ;\
-        source /home/kiri/.bashrc ;\
-        export DISPLAY=':0.0' ;\
-        cd \"${docker_repo_path}\" || exit 1 ;\
-        ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
-        sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-        xvfb-run kiri --ip \${ip_addr} ${kiri_params} ;\
-        echo DONE
-        bash -i
-    "
+setfacl -m user:1000:r "${HOME}/.Xauthority"
+
+
+if [[ ${JUST_RUN_CONTAINER} == 0 ]]; then
+
+    # run kiri inside the container
+    docker run \
+        -it \
+        --rm \
+        -e DISPLAY \
+        --hostname="kiri" \
+        --net=bridge \
+        --name ${container_tag} \
+        --mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
+        -v ${XSOCK}:${XSOCK} \
+        -v ${XAUTH}:${XAUTH} \
+        -e XAUTHORITY=${XAUTH} \
+        ${container_img} \
+        zsh -i -c "\
+            source /home/kiri/.profile ;\
+            source /home/kiri/.zshrc ;\
+            cd \"${docker_repo_path}\" || exit 1 ;\
+            ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+            sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
+            xvfb-run kiri --ip \${ip_addr} ${kiri_params} ;\
+            echo DONE
+            zsh -i
+        "
+else
+
+    # run the container launching kiri
+    docker run \
+        -it \
+        --rm \
+        -e DISPLAY \
+        --hostname="kiri" \
+        --net=bridge \
+        --name ${container_tag} \
+        -v ${XSOCK}:${XSOCK} \
+        -v ${XAUTH}:${XAUTH} \
+        -e XAUTHORITY=${XAUTH} \
+        ${container_img}
+fi
 
 docker stop ${container_tag} &> /dev/null
