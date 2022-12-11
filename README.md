@@ -14,11 +14,24 @@ cd kiri-docker
 make build
 ```
 
-# Usage
+# Environment
 
 ```bash
-export PATH="$(pwd)/kiri-docker"
+export PATH="$(pwd)/kiri-docker/"
+```
+
+# Usage
+
+To run kiri on your repo:
+
+```bash
 kiri PROJECT_PATH [KIRI_PARAMETERS]
+```
+
+To just go inside the container doing nothing, call kiri without parameters.
+
+```bash
+kiri
 ```
 
 # Example
@@ -28,4 +41,3 @@ This example launches kiri (docker), passing the path of the project and kiri `-
 ```bash
 kiri "/home/lheck/Documents/assoc-board" -r
 ```
-
