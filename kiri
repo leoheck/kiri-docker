@@ -11,52 +11,40 @@ if [[ -z $1 ]]; then
     exit 1
 fi
 
-repo_path="$1"
+repo_path="${1}"
 repo_dir=$(basename "${repo_path}")
 docker_repo_path="/home/kiri/${repo_dir}"
 
 # shift parameters
 shift
-# echo ${@}
-# exit
-
-
-xhost
-
-# # Allow X server connection
-xhost +local:*
-
-# Disallow X server connection
-xhost -local:*
+kiri_params="$@"
 
 container_img=kiri:latest
-docker_name=kiri
+container_tag=kiri2
+container_id=$(docker ps -aqf "name=${container_tag}")
 
-docker stop ${docker_name} &> /dev/null
-docker kill ${docker_name} &> /dev/null
-docker rm   ${docker_name} &> /dev/null
+echo
+echo "Kiri Docker"
+echo "Image: ${container_img}"
+echo "Container: ${container_tag} (${container_id})"
+echo "Kiri params:" ${kiri_params}
 
-# permission to launch gui (wayland?)
-xaut_hash=$(xauth list | grep "MIT-MAGIC-COOKIE-1" | head -1 | cut -d" " -f5)
+docker stop ${container_tag}  &> /dev/null
+docker kill ${container_tag}  &> /dev/null
+docker rm -f ${container_tag} &> /dev/null
 
-# Script to run when docker runs
-# read -r -d '' KIRI_SCRIPT << EOM
-# source /home/kiri/.bashrc
-# export DISPLAY=\":0.0\"
-# sudo Xvfb -f ${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 &
-# cd "${docker_repo_path}" || exit 1
-# ip_addr=\$(ip a | grep eth0 | grep inet | sed \'s/^[ ]\+//g\' | cut -d\' \' -f 2 | cut -d\'/\' -f1)
-# xvfb-run kiri --ip \${ip_addr}
-# bash -i
-# EOM
+xhost &> /dev/null
+xhost +local:* &> /dev/null # Allow X server connection
+xhost -local:* &> /dev/null # Disallow X server connection
+xauth_hash=$(xauth list | grep "MIT-MAGIC-COOKIE-1" | head -1 | cut -d" " -f5)
 
-# Launch the container and run the KIRI_SCRIPT inside the folder of the project
+# run the container launching kiri
 docker run \
     -e DISPLAY=${DISPLAY} \
     --volume="${HOME}/.Xauthority:/kiri/.Xauthority:rw" \
     --hostname="kiri" \
     --net=bridge \
-    --name ${docker_name} \
+    --name ${container_tag} \
     --mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
     -it ${container_img} \
     bash -i -c "\
@@ -66,7 +54,9 @@ docker run \
         cd \"${docker_repo_path}\" || exit 1 ;\
         ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
         sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-        xvfb-run kiri --ip \${ip_addr} \"${@}\"
+        xvfb-run kiri --ip \${ip_addr} ${kiri_params} ;\
+        echo DONE
+        bash -i
     "
 
-docker stop ${docker_name} &> /dev/null
+docker stop ${container_tag} &> /dev/null
