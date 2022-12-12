@@ -57,7 +57,7 @@ kiri
 
 # Example
 
-This example launches kiri (docker), passing the path of the project and kiri `-r` flag to clean old files.
+This example launches kiri (docker), passing the path of the project path and a parameter `-r` of kiri to remove old files before of running it. 
 
 ```bash
 kiri "/home/lheck/Documents/assoc-board" -r
