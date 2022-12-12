@@ -21,7 +21,7 @@ docker_repo_path="/home/kiri/${repo_dir}"
 shift
 kiri_params="$@"
 
-container_img=kiri:latest
+container_img=leoheck/kiri
 container_tag=kiri
 
 echo
@@ -66,7 +66,6 @@ if [[ ${JUST_RUN_CONTAINER} == 0 ]]; then
             ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
             sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
             xvfb-run kiri --ip \${ip_addr} ${kiri_params} ;\
-            echo DONE
             zsh -i
         "
 else
