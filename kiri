@@ -22,7 +22,7 @@ shift
 kiri_params="$@"
 
 container_img=kiri:latest
-container_tag=kiri_container
+container_tag=kiri
 
 echo
 echo "Kiri Docker"
