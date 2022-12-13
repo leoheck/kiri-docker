@@ -35,7 +35,6 @@ remove_all_docker_images:
 	docker rmi $(shell docker images -q | tac)
 
 
-
 .PHONY: run_test
 
 # Don't use this target, this is just my own test case
