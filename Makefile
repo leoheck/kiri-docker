@@ -1,24 +1,25 @@
 
 docker_username = leoheck
 docker_repo = kiri
-docker_tagname = 1.0
+docker_tagname = latest
 
 docker_build: Dockerfile
-	docker build --tag $(docker_username)/$(docker_repo) .
+	docker build --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 docker_build_no_cache: Dockerfile
-	docker build --no-cache --tag $(docker_username)/$(docker_repo) .
+	docker build --no-cache --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+
 
 docker_login:
 	docker login
 
 docker_push: docker_build
-	docker push $(docker_username)/$(docker_repo)
+	docker push $(docker_username)/$(docker_repo):$(docker_tagname)
 
 
 # get the latest kiri image from docker hub
 docker_pull:
-	docker pull $(docker_username)/$(docker_repo)
+	docker pull $(docker_username)/$(docker_repo):$(docker_tagname)
 
 
 show_containers:
