@@ -1,0 +1,259 @@
+{
+  "annotation": {
+    "messages_filter": -1,
+    "method": 0,
+    "options": 0,
+    "scope": 0,
+    "sort_order": 0
+  },
+  "appearance": {
+    "color_theme": "_builtin_default",
+    "edit_component_visible_columns": "0 1 2 3 4 5 6 7",
+    "edit_sheet_visible_columns": "0 1 2 3 4 5 6 7",
+    "erc_severities": 24,
+    "footprint_preview": true,
+    "navigator_stays_open": false,
+    "print_sheet_reference": true,
+    "show_hidden_fields": false,
+    "show_hidden_pins": false,
+    "show_illegal_symbol_lib_dialog": true,
+    "show_page_limits": true,
+    "show_sexpr_file_convert_warning": true,
+    "show_sheet_filename_case_sensitivity_dialog": true
+  },
+  "autoplace_fields": {
+    "align_to_grid": true,
+    "allow_rejustify": true,
+    "enable": true
+  },
+  "bom": {
+    "plugins": [
+      {
+        "command": "",
+        "name": "bom_csv_grouped_by_value",
+        "path": "bom_csv_grouped_by_value.py"
+      },
+      {
+        "command": "",
+        "name": "bom_csv_grouped_by_value_with_fp",
+        "path": "bom_csv_grouped_by_value_with_fp.py"
+      }
+    ],
+    "selected_plugin": ""
+  },
+  "color_picker": {
+    "default_tab": 0
+  },
+  "cross_probing": {
+    "auto_highlight": true,
+    "center_on_items": true,
+    "zoom_to_fit": true
+  },
+  "drawing": {
+    "auto_start_wires": true,
+    "default_bus_thickness": 12,
+    "default_junction_size": 36,
+    "default_line_thickness": 6,
+    "default_repeat_offset_x": 0,
+    "default_repeat_offset_y": 100,
+    "default_sheet_background_color": "rgba(0, 0, 0, 0.000)",
+    "default_sheet_border_color": "rgba(0, 0, 0, 0.000)",
+    "default_text_size": 50,
+    "default_wire_thickness": 6,
+    "field_names": "",
+    "hv_lines_only": true,
+    "junction_size_choice": 3,
+    "junction_size_mult_list": [
+      0.0,
+      1.7,
+      4.0,
+      6.0,
+      9.0,
+      12.0
+    ],
+    "pin_symbol_size": 25,
+    "repeat_label_increment": 1,
+    "text_offset_ratio": 0.08
+  },
+  "field_editor": {
+    "column_widths": {},
+    "fields_group_by": {},
+    "fields_show": {}
+  },
+  "find_replace": {
+    "find_history": [],
+    "find_string": "",
+    "flags": 1,
+    "replace_history": [],
+    "replace_string": ""
+  },
+  "graphics": {
+    "canvas_type": 1,
+    "high_contrast_factor": 0.3499999940395355,
+    "highlight_factor": 0.5,
+    "select_factor": 0.75
+  },
+  "input": {
+    "drag_is_move": false
+  },
+  "lib_tree": {
+    "column_width": 360
+  },
+  "lib_view": {
+    "cmp_list_width": 150,
+    "lib_list_width": 150,
+    "show_pin_electrical_type": true,
+    "window": {
+      "display": 0,
+      "maximized": false,
+      "perspective": "",
+      "pos_x": 0,
+      "pos_y": 0,
+      "size_x": 500,
+      "size_y": 400
+    }
+  },
+  "meta": {
+    "version": 1
+  },
+  "netlist": {
+    "plugins": []
+  },
+  "page_settings": {
+    "export_comment1": false,
+    "export_comment2": false,
+    "export_comment3": false,
+    "export_comment4": false,
+    "export_comment5": false,
+    "export_comment6": false,
+    "export_comment7": false,
+    "export_comment8": false,
+    "export_comment9": false,
+    "export_company": false,
+    "export_date": false,
+    "export_paper": false,
+    "export_revision": false,
+    "export_title": false
+  },
+  "plot": {
+    "background_color": false,
+    "color": true,
+    "color_theme": "user",
+    "format": 0,
+    "frame_reference": true,
+    "hpgl_origin": 0,
+    "hpgl_paper_size": 0,
+    "hpgl_pen_size": 0.5
+  },
+  "printing": {
+    "background": false,
+    "color_theme": "",
+    "layers": [],
+    "monochrome": true,
+    "scale": 1.0,
+    "title_block": false,
+    "use_theme": false
+  },
+  "selection": {
+    "draw_selected_children": true,
+    "fill_shapes": false,
+    "select_pin_selects_symbol": true,
+    "text_as_box": false,
+    "thickness": 3
+  },
+  "simulator": {
+    "cursors_panel_height": 0,
+    "plot_panel_height": 0,
+    "plot_panel_width": 0,
+    "signal_panel_height": 0,
+    "white_background": false,
+    "window": {
+      "display": 0,
+      "maximized": false,
+      "perspective": "",
+      "pos_x": 0,
+      "pos_y": 0,
+      "size_x": 500,
+      "size_y": 400
+    }
+  },
+  "symbol_chooser": {
+    "height": -1,
+    "keep_symbol": false,
+    "place_all_units": true,
+    "sash_pos_h": -1,
+    "sash_pos_v": -1,
+    "width": -1
+  },
+  "system": {
+    "file_history": [
+      "/home/kiri/assoc-board/board.kicad_sch"
+    ],
+    "first_run_shown": true,
+    "last_imperial_units": 0,
+    "last_metric_units": 1,
+    "last_symbol_lib_dir": "",
+    "max_undo_items": 0,
+    "never_show_rescue_dialog": false,
+    "units": 1
+  },
+  "window": {
+    "cursor": {
+      "always_show_cursor": true,
+      "fullscreen_cursor": false
+    },
+    "display": 0,
+    "grid": {
+      "axes_enabled": false,
+      "fast_grid_1": 1,
+      "fast_grid_2": 2,
+      "last_size": 1,
+      "line_width": 1.0,
+      "min_spacing": 10.0,
+      "show": true,
+      "sizes": [
+        "100 mil",
+        "50 mil",
+        "25 mil",
+        "10 mil",
+        "5 mil",
+        "2 mil",
+        "1 mil"
+      ],
+      "snap": 0,
+      "style": 0,
+      "user_grid_x": "10 mil",
+      "user_grid_y": "10 mil"
+    },
+    "maximized": true,
+    "mru_path": "",
+    "perspective": "layout2|name=InfoBar;caption=;state=131454;dir=1;layer=1;row=0;pos=0;prop=100000;bestw=20;besth=30;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=MainToolbar;caption=;state=139632;dir=1;layer=6;row=0;pos=0;prop=100000;bestw=1140;besth=34;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=OptToolbar;caption=;state=139596;dir=4;layer=3;row=0;pos=0;prop=100000;bestw=34;besth=232;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=ToolsToolbar;caption=;state=139596;dir=2;layer=2;row=0;pos=0;prop=100000;bestw=34;besth=602;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=DrawFrame;caption=;state=1020;dir=5;layer=0;row=0;pos=0;prop=100000;bestw=385;besth=139;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|name=MsgPanel;caption=;state=131452;dir=3;layer=6;row=0;pos=0;prop=100000;bestw=400;besth=36;minw=-1;minh=-1;maxw=-1;maxh=-1;floatx=-1;floaty=-1;floatw=-1;floath=-1|dock_size(1,6,0)=34|dock_size(4,3,0)=34|dock_size(2,2,0)=34|dock_size(5,0,0)=384|dock_size(3,6,0)=36|",
+    "pos_x": 320,
+    "pos_y": 253,
+    "size_x": 1280,
+    "size_y": 720,
+    "zoom_factors": [
+      0.05,
+      0.07,
+      0.1,
+      0.15,
+      0.2,
+      0.3,
+      0.5,
+      0.7,
+      1.0,
+      1.5,
+      2.0,
+      3.0,
+      4.5,
+      6.5,
+      10.0,
+      15.0,
+      20.0,
+      30.0,
+      45.0,
+      65.0,
+      100.0
+    ]
+  }
+}
