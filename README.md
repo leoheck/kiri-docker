@@ -56,13 +56,13 @@ For extended arguments list, please use the flag `-h`.
 This example launches kiri (docker), passing the path of the project path and a parameter `-r` of kiri to remove old files before of running it.
 
 ```bash
-kiri "/home/lheck/Documents/assoc-board" -r
+kiri "/home/lheck/Documents/assoc-board" -k -r
 ```
 
 This example starts the container passing the project folder to mount there but do nothing (do not run kiri) so you can debug something manually.
 
 ```bash
-kiri "/home/lheck/Documents/assoc-board" -d
+kiri "/home/lheck/Documents/assoc-board" -k -d
 ```
 
 This, just launch the container without binding any local folder
