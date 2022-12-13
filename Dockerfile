@@ -18,6 +18,7 @@ RUN apt-get install -y bc
 RUN apt-get install -y coreutils
 RUN apt-get install -y software-properties-common
 RUN apt-get install -y x11-apps
+RUN apt-get install -y x11-utils
 RUN apt-get install -y x11-xkb-utils
 RUN apt-get install -y xvfb
 RUN apt-get install -y libc-bin
@@ -69,5 +70,9 @@ RUN sudo rm -rf /tmp/*
 RUN sudo rm -rf /var/tmp/*
 RUN sudo rm -rf /usr/share/doc/*
 RUN sudo rm -rf /usr/share/info/*
+
+# initialize kicad config files to skip default popups of setup
+COPY config /home/kiri/.config
+RUN sudo chown -R kiri /home/kiri/.config
 
 CMD zsh
