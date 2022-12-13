@@ -2,86 +2,201 @@
 
 # KIRI DOCKER
 
-# USAGE:
-#
-# kiri [REPO_PATH [EXTRA_KIRI_ARGS]]
+show_help()
+{
+	read -r -d '' help_message <<- EOM
+	USAGE
 
-JUST_RUN_CONTAINER=0
+	    ${0} [OPTIONS] [REPO_PATH] [-k|--kiri [ARGS]
 
-if [[ -z ${1} ]]; then
-    echo "REPO_PATH is missing"
-    JUST_RUN_CONTAINER=1
-fi
+	OPTIONS
 
-repo_path="${1}"
-repo_dir=$(basename "${repo_path}")
-docker_repo_path="/home/kiri/${repo_dir}"
+	    -h|--help         Show version
+	    -v|--version      Show version
+	    -d|--dont-run     Do not run kiri
+	    -k|--kiri [ARGS]  Kiri arguments delimiter
 
-# shift parameters
-shift
-kiri_params="$@"
+	REPO_PATH
 
-container_img=leoheck/kiri
-container_tag=kiri
+	    If repo path is given it is mounted inside the container,
+	    otherwise it is not used. If the repo path is given then
+	    kiri will run by default, otherwise it won't.
 
-echo
-echo "Kiri Docker"
-echo "Image: ${container_img}"
-echo "Container: ${container_tag}"
-if [[ -n "${kiri_params}" ]]; then
-    echo "Kiri params: ${kiri_params}"
-fi
+	EOM
 
-# docker stop ${container_tag}  &> /dev/null
-# docker kill ${container_tag}  &> /dev/null
-# docker rm -f ${container_tag} &> /dev/null
+	echo -e "\n${help_message}\n"
+}
 
-# Run these in the host machine
-XSOCK=/tmp/.X11-unix
-XAUTH=/tmp/.docker.xauth
-xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+get_kiri_docker_version()
+{
+	local tool_path
+	local git_dir_path
+	local last_commit_hash
+	local last_commit_date
 
-setfacl -m user:1000:r "${HOME}/.Xauthority"
+	tool_path=$(dirname "$(dirname "$(which ${0})")")
+	git_dir_path="${tool_path}/.git"
+
+	if [[ -d "${git_dir_path}" ]]; then
+		last_commit_hash=$(git --git-dir "${git_dir_path}" rev-parse --short HEAD)
+		last_commit_date=$(git --git-dir "${git_dir_path}" log -1 --format="%at" | xargs -I{} date -d @{} +"%Y/%m/%d %Hh%M")
+		echo "${last_commit_hash} ${last_commit_date}"
+	else
+		echo "Unknown"
+	fi
+}
+
+show_version()
+{
+	IFS= read -r -d '' VERSION <<-EOM
+	    $(basename "${0}")-docker $(get_kiri_docker_version)
+	EOM
+
+	printf "\n%s\n" "$VERSION"
+}
+
+command_line_parse()
+{
+	run_kiri=1
+
+	while [[ ${#} -gt 0 ]]; do
+
+		local key="${1}"
+
+		case "${key}" in
+
+			-h|--help)
+				show_help
+				exit 0
+				;;
+
+			-v|--version)
+				shift
+				show_version
+				version_flag=1
+				kiri_args="-v${kiri_args}"
+				;;
+
+			-d|--dont-run)
+				shift
+				run_kiri=0
+				;;
 
 
-if [[ ${JUST_RUN_CONTAINER} == 0 ]]; then
+			-k|--kiri)
+				shift
+				kiri_args="${kiri_args} ${@}"
+				break
+				;;
 
-    # run kiri inside the container
-    docker run \
-        -it \
-        --rm \
-        -e DISPLAY \
-        --hostname="kiri" \
-        --net=bridge \
-        --name ${container_tag} \
-        --mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
-        -v ${XSOCK}:${XSOCK} \
-        -v ${XAUTH}:${XAUTH} \
-        -e XAUTHORITY=${XAUTH} \
-        ${container_img} \
-        zsh -i -c "\
-            source /home/kiri/.profile ;\
-            source /home/kiri/.zshrc ;\
-            cd \"${docker_repo_path}\" || exit 1 ;\
-            ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
-            sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-            xvfb-run kiri --ip \${ip_addr} ${kiri_params} ;\
-            zsh -i
-        "
-else
+			--*|-*)
+				echo "Unknown argument '${1}'"
+				exit 1
+				;;
 
-    # run the container launching kiri
-    docker run \
-        -it \
-        --rm \
-        -e DISPLAY \
-        --hostname="kiri" \
-        --net=bridge \
-        --name ${container_tag} \
-        -v ${XSOCK}:${XSOCK} \
-        -v ${XAUTH}:${XAUTH} \
-        -e XAUTHORITY=${XAUTH} \
-        ${container_img}
-fi
+			*)
+				repo_path="${1}"
+				shift
+				;;
+		esac
+	done
 
-docker stop ${container_tag} &> /dev/null
+	if [[ -n ${version_flag} ]] && [[ -z ${repo_path} ]]; then
+		exit 0
+	fi
+}
+
+main()
+{
+	shift
+	command_line_parse "${@}"
+
+	repo_dir=$(basename "${repo_path}")
+	docker_repo_path="/home/kiri/${repo_dir}"
+
+	container_img=leoheck/kiri
+	container_name=kiri
+	container_tag=latest
+
+	if [[ -z ${version_flag} ]]; then
+		echo
+		echo "Kiri Docker"
+		echo "Image: ${container_img}"
+		echo "Container: ${container_name}"
+
+		if [[ -n "${repo_path}" ]]; then
+			echo "Repo Path: ${repo_path}"
+		fi
+		if [[ -n "${repo_path}" ]] && [[ -n "${kiri_args}" ]]; then
+			echo "Kiri Args: $(echo ${kiri_args} | sed "s/^[ ]\+//g")"
+		fi
+	fi
+
+	# docker stop ${container_name}  &> /dev/null
+	# docker kill ${container_name}  &> /dev/null
+	# docker rm -f ${container_name} &> /dev/null
+
+	# Run these in the host machine
+	XSOCK=/tmp/.X11-unix
+	XAUTH=/tmp/.docker.xauth
+	xauth nlist :0 | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -
+
+	setfacl -m user:1000:r "${HOME}/.Xauthority"
+
+	if [[ -n "${repo_path}" ]]; then
+		if [[ "${run_kiri}" == "1" ]]; then
+			read -r -d '' KIRI_SCRIPT <<- EOM
+				export SPACESHIP_PROMPT_ASYNC=false ;\
+			    source /home/kiri/.profile ;\
+			    source /home/kiri/.zshrc ;\
+			    cd "${docker_repo_path}" || exit 1 ;\
+			    ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
+			    xvfb-run kiri --ip \${ip_addr} ${kiri_args} ;\
+			    zsh -i
+			EOM
+		else
+			read -r -d '' KIRI_SCRIPT <<- EOM
+				export SPACESHIP_PROMPT_ASYNC=false ;\
+			    source /home/kiri/.profile ;\
+			    source /home/kiri/.zshrc ;\
+			    cd "${docker_repo_path}" || exit 1 ;\
+			    ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+			    zsh -i
+			EOM
+		fi
+	fi
+
+	if [[ -n "${repo_path}" ]]; then
+		docker run \
+			-it \
+			--rm \
+			-e DISPLAY \
+			--hostname="kiri" \
+			--net=bridge \
+			--name ${container_name} \
+			--mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
+			-v ${XSOCK}:${XSOCK} \
+			-v ${XAUTH}:${XAUTH} \
+			-e XAUTHORITY=${XAUTH} \
+			${container_img} \
+			zsh -i -c "${KIRI_SCRIPT}"
+	else
+		docker run \
+			-it \
+			--rm \
+			-e DISPLAY \
+			--hostname="kiri" \
+			--net=bridge \
+			--name ${container_name} \
+			-v ${XSOCK}:${XSOCK} \
+			-v ${XAUTH}:${XAUTH} \
+			-e XAUTHORITY=${XAUTH} \
+			${container_img}
+	fi
+
+	# make sure the container has stoped
+	docker stop ${container_name} &> /dev/null
+}
+
+main "${0}" "${@}"
