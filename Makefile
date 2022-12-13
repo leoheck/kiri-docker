@@ -4,10 +4,10 @@ docker_repo = kiri
 docker_tagname = latest
 
 docker_build: Dockerfile
-	docker build --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	time docker build --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 docker_build_no_cache: Dockerfile
-	docker build --no-cache --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	time docker build --no-cache --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 
 docker_login:
