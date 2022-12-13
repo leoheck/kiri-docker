@@ -52,7 +52,7 @@ show_version()
 	    $(basename "${0}")-docker $(get_kiri_docker_version)
 	EOM
 
-	printf "\n%s\n" "$VERSION"
+	printf "\n%s" "$VERSION"
 }
 
 command_line_parse()
@@ -118,7 +118,10 @@ main()
 	container_name=kiri
 	container_tag=latest
 
-	if [[ -z ${version_flag} ]]; then
+	echo "${kiri_args}"  | grep -q -- '-v'
+	kiri_version_flag=$?
+
+	if [[ -z ${version_flag} ]] && [[ -z ${kiri_version_flag} ]]; then
 		echo
 		echo "Kiri Docker"
 		echo "Image: ${container_img}"
@@ -146,7 +149,7 @@ main()
 	if [[ -n "${repo_path}" ]]; then
 		if [[ "${run_kiri}" == "1" ]]; then
 			read -r -d '' KIRI_SCRIPT <<- EOM
-				export SPACESHIP_PROMPT_ASYNC=false ;\
+			    export SPACESHIP_PROMPT_ASYNC=false ;\
 			    source /home/kiri/.profile ;\
 			    source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
@@ -157,12 +160,21 @@ main()
 			EOM
 		else
 			read -r -d '' KIRI_SCRIPT <<- EOM
-				export SPACESHIP_PROMPT_ASYNC=false ;\
+			    export SPACESHIP_PROMPT_ASYNC=false ;\
 			    source /home/kiri/.profile ;\
 			    source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
 			    zsh -i
+			EOM
+		fi
+
+		if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
+			read -r -d '' KIRI_SCRIPT <<- EOM
+			    export SPACESHIP_PROMPT_ASYNC=false ;\
+			    source /home/kiri/.profile ;\
+			    source /home/kiri/.zshrc ;\
+			    kiri ${kiri_args}
 			EOM
 		fi
 	fi
