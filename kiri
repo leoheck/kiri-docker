@@ -118,8 +118,9 @@ main()
 	container_name=kiri
 	container_tag=latest
 
-	echo "${kiri_args}"  | grep -q -- '-v'
-	kiri_version_flag=$?
+	if echo "${kiri_args}" | grep -q -- '-v'; then
+		kiri_version_flag=1
+	fi
 
 	if [[ -z ${version_flag} ]] && [[ -z ${kiri_version_flag} ]]; then
 		echo
@@ -168,15 +169,15 @@ main()
 			    zsh -i
 			EOM
 		fi
+	fi
 
-		if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
-			read -r -d '' KIRI_SCRIPT <<- EOM
-			    export SPACESHIP_PROMPT_ASYNC=false ;\
-			    source /home/kiri/.profile ;\
-			    source /home/kiri/.zshrc ;\
-			    kiri ${kiri_args}
-			EOM
-		fi
+	if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
+		read -r -d '' KIRI_SCRIPT <<- EOM
+		    export SPACESHIP_PROMPT_ASYNC=false ;\
+		    source /home/kiri/.profile ;\
+		    source /home/kiri/.zshrc ;\
+		    kiri ${kiri_args}
+		EOM
 	fi
 
 	if [[ -n "${repo_path}" ]]; then
