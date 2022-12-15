@@ -4,10 +4,13 @@ docker_repo = kiri
 docker_tagname = latest
 
 docker_build: Dockerfile
-	time docker build --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	time docker build \
+		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 docker_build_no_cache: Dockerfile
-	time docker build --no-cache --tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	time docker build \
+		--build-arg CACHEBUST=$(date +%s) \
+		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 
 docker_login:
@@ -37,6 +40,8 @@ remove_all_docker_images:
 
 .PHONY: run_test
 
+testcase_path = "/home/lheck/Documents/assoc-board"
+
 # Don't use this target, this is just my own test case
 run_test:
-	./kiri "/home/lheck/Documents/assoc-board"
+	./kiri $(testcase_path)
