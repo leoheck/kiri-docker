@@ -38,11 +38,15 @@ RUN apt-get update && \
 
 # install latest kicad 6.0.*
 RUN add-apt-repository -y ppa:kicad/kicad-6.0-releases
-RUN apt-get install --no-install-recommends -y kicad
-
-# remove some unecessary things on kicad (~ 1.8 GB)
-RUN sudo rm -rf /usr/share/kicad/demos/
-RUN sudo rm -rf /usr/share/kicad/3dmodels/
+RUN apt-get install --no-install-recommends -y kicad && \
+	apt-get purge -y \
+		kicad-libraries \
+		kicad-packages3d \
+		kicad-footprints \
+		kicad-doc-en \
+		kicad-demos \
+		kicad-templates && \
+	rm -rf /var/lib/apt/lists/*
 
 # create kiri user
 RUN useradd -rm -d "/home/kiri" -s "/bin/bash" -g root -G sudo -u 1000 kiri -p kiri
@@ -81,7 +85,7 @@ RUN opam update && \
 		sha \
 		tyxml \
 		git-unix && \
-	opam clean
+	opam clean -a -c -s --logs -r
 
 # oh-my-zsh, please
 RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
@@ -110,7 +114,7 @@ RUN echo 'export PATH=${KIRI_HOME}/bin:${PATH}' | tee -a "${HOME}/.zshrc"
 
 # clean donwloaded and unecessary stuff
 RUN pip cache purge
-RUN opam clean
+RUN opam clean -a -c -s --logs -r
 RUN sudo apt-get purge -y \
 		apt-utils \
 		software-properties-common \
@@ -118,7 +122,6 @@ RUN sudo apt-get purge -y \
 		libgtk-3-dev \
 		libgmp-dev \
 		pkg-config \
-		zenity \
 		dune \
 		curl
 RUN sudo rm -rf \
