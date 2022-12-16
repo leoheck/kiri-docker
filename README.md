@@ -65,6 +65,12 @@ This example starts the container passing the project folder to mount there but 
 kiri "/home/lheck/Documents/assoc-board" -d
 ```
 
+Launch kiri on a project in a nested folder
+
+```bash
+kiri "/home/lheck/Documents/assoc-board" -k "nested_project/board.kicad_pro"
+```
+
 This, just launch the container without binding any local folder
 
 ```bash
