@@ -4,37 +4,31 @@
 FROM ubuntu:22.04
 
 ARG DEBIAN_FRONTEND noninteractive
+ARG DEBCONF_NOWARNINGS="yes"
 ARG TERM 'dumb'
 
-RUN apt-get update && \
+RUN apt-get update ;\
 	apt-get install -y \
-		apt-utils \
 		sudo \
 		git \
 		zsh \
-		iproute2 \
 		curl \
 		coreutils \
 		software-properties-common \
-		x11-apps \
 		x11-utils \
 		x11-xkb-utils \
 		xvfb \
-		libc-bin \
-		fonts-powerline \
-		build-essential \
-		libgmp-dev \
-		pkg-config \
 		opam \
 		python-is-python3 \
 		python3-pip \
 		dos2unix \
-		dune \
 		librsvg2-bin \
 		imagemagick \
 		xdotool \
-		rename && \
-	rm -rf /var/lib/apt/lists/*
+		rename ;\
+	apt-get clean ;\
+	rm -rf /var/lib/apt/lists/* ;\
+	rm -rf /var/tmp/*
 
 # install latest kicad 6.0.*
 RUN add-apt-repository -y ppa:kicad/kicad-6.0-releases
@@ -45,8 +39,11 @@ RUN apt-get install --no-install-recommends -y kicad && \
 		kicad-footprints \
 		kicad-doc-en \
 		kicad-demos \
-		kicad-templates && \
-	rm -rf /var/lib/apt/lists/*
+		kicad-templates \
+		software-properties-common ;\
+	apt-get clean ;\
+	rm -rf /var/lib/apt/lists/* ;\
+	rm -rf /var/tmp/*
 
 # create kiri user
 RUN useradd -rm -d "/home/kiri" -s "/bin/bash" -g root -G sudo -u 1000 kiri -p kiri
@@ -84,8 +81,10 @@ RUN opam update && \
 		base64 \
 		sha \
 		tyxml \
-		git-unix && \
-	opam clean -a -c -s --logs -r
+		git-unix ;\
+	opam clean -a -c -s --logs -r ;\
+	rm -rf ~/.opam/download-cache ;\
+	rm -rf ~/.opam/repo/*
 
 # oh-my-zsh, please
 RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
@@ -104,7 +103,7 @@ ENV PATH "${PATH}:/home/kiri/.local/bin"
 ARG CACHEBUST_KIRI=1
 
 # install kiri
-RUN bash -T -c "INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+RUN bash -c "TERM=xterm-256color; INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
 
 # kiri environment
 RUN echo '# KIRI' | tee -a "${HOME}/.zshrc"
@@ -112,23 +111,21 @@ RUN echo 'export KIRI_HOME=${HOME}/.local/share/kiri' | tee -a "${HOME}/.zshrc"
 RUN echo 'export PATH=${KIRI_HOME}/submodules/KiCad-Diff/bin:${PATH}' | tee -a "${HOME}/.zshrc"
 RUN echo 'export PATH=${KIRI_HOME}/bin:${PATH}' | tee -a "${HOME}/.zshrc"
 
+# RUN awk '/32 host/ { print f } {f=$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1
+
 # clean donwloaded and unecessary stuff
 RUN pip cache purge
-RUN opam clean -a -c -s --logs -r
+RUN opam clean -a -c -s --logs -r ;\
+	rm -rf ~/.opam/download-cache ;\
+	rm -rf ~/.opam/repo/*
 RUN sudo apt-get purge -y \
-		apt-utils \
-		software-properties-common \
-		build-essential \
-		libgtk-3-dev \
-		libgmp-dev \
-		pkg-config \
-		dune \
 		curl
 RUN sudo rm -rf \
 		/tmp/* \
 		/var/tmp/* \
 		/usr/share/doc/* \
-		/usr/share/info/*
+		/usr/share/info/* \
+		/usr/share/man/*
 
 # initialize kicad config files to skip default popups of setup
 COPY config /home/kiri/.config
