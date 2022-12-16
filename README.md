@@ -62,7 +62,7 @@ kiri "/home/lheck/Documents/assoc-board" -k -r
 This example starts the container passing the project folder to mount there but do nothing (do not run kiri) so you can debug something manually.
 
 ```bash
-kiri "/home/lheck/Documents/assoc-board" -k -d
+kiri "/home/lheck/Documents/assoc-board" -d
 ```
 
 This, just launch the container without binding any local folder
