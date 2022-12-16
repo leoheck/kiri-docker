@@ -157,22 +157,18 @@ main()
 	if [[ -n "${repo_path}" ]]; then
 		if [[ "${run_kiri}" == "1" ]]; then
 			read -r -d '' KIRI_SCRIPT <<- EOM
-			    export SPACESHIP_PROMPT_ASYNC=false ;\
-			    source /home/kiri/.profile ;\
-			    source /home/kiri/.zshrc ;\
+				source /home/kiri/.profile ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
-			    ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
 			    xvfb-run kiri --ip \${ip_addr} ${kiri_args} ;\
 			    zsh -i
 			EOM
 		else
 			read -r -d '' KIRI_SCRIPT <<- EOM
-			    export SPACESHIP_PROMPT_ASYNC=false ;\
-			    source /home/kiri/.profile ;\
-			    source /home/kiri/.zshrc ;\
+				source /home/kiri/.profile ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
-			    ip_addr=\$(ip a | grep eth0 | grep inet | sed 's/^[ ]\+//g' | cut -d' ' -f 2 | cut -d'/' -f1) ;\
+			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    zsh -i
 			EOM
 		fi
@@ -180,10 +176,17 @@ main()
 
 	if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
 		read -r -d '' KIRI_SCRIPT <<- EOM
-		    export SPACESHIP_PROMPT_ASYNC=false ;\
 		    source /home/kiri/.profile ;\
-		    source /home/kiri/.zshrc ;\
+		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 		    kiri ${kiri_args}
+		EOM
+	fi
+
+	if [[ -z "${repo_path}" ]]; then
+		read -r -d '' KIRI_SCRIPT <<- EOM
+		    source /home/kiri/.profile ;\
+		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1)
+		    zsh -i
 		EOM
 	fi
 
@@ -212,7 +215,8 @@ main()
 			-v ${XSOCK}:${XSOCK} \
 			-v ${XAUTH}:${XAUTH} \
 			-e XAUTHORITY=${XAUTH} \
-			${container_img}
+			${container_img} \
+			zsh -i -c "${KIRI_SCRIPT}"
 	fi
 
 	# make sure the container has stoped
