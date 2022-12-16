@@ -19,6 +19,10 @@ RUN apt-get update ;\
 		x11-xkb-utils \
 		xvfb \
 		opam \
+		build-essential \
+		libgmp-dev \
+		pkg-config \
+		util-linux \
 		python-is-python3 \
 		python3-pip \
 		dos2unix \
@@ -46,7 +50,7 @@ RUN apt-get install --no-install-recommends -y kicad && \
 	rm -rf /var/tmp/*
 
 # create kiri user
-RUN useradd -rm -d "/home/kiri" -s "/bin/bash" -g root -G sudo -u 1000 kiri -p kiri
+RUN useradd -rm -d "/home/kiri" -s "/usr/bin/zsh" -g root -G sudo -u 1000 kiri -p kiri
 
 # run sudo without password
 RUN echo "kiri ALL=(ALL) NOPASSWD:ALL" | tee sudo -a "/etc/sudoers"
@@ -62,7 +66,6 @@ ENV PATH "${PATH}:/home/kiri/.local/bin"
 RUN yes | pip3 install \
 		"pillow>8.2.0" \
 		"six>=1.15.0" \
-		"dateutils>=0.6.12" \
 		"python_dateutil>=2.8.1" \
 		"pytz>=2021.1" \
 		"pathlib>=1.0.1" && \
