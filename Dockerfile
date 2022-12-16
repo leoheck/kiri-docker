@@ -67,9 +67,6 @@ RUN yes | pip3 install \
 		"pathlib>=1.0.1" && \
 	pip3 cache purge
 
-		# "wxpython>=4.0.7" \
-		# "wxwidgets>=1.0.5" && \
-
 # opam dependencies
 RUN yes | opam init --disable-sandboxing
 RUN opam switch create 4.10.2
