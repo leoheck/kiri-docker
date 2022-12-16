@@ -24,25 +24,13 @@ RUN apt-get install -y xvfb
 RUN apt-get install -y libc-bin
 RUN apt-get install -y fonts-powerline
 
-RUN apt-get install -y build-essential
-RUN apt-get install -y libgtk-3-dev
-RUN apt-get install -y libgmp-dev
-RUN apt-get install -y pkg-config
-RUN apt-get install -y opam
-RUN apt-get install -y python-is-python3
-RUN apt-get install -y python3-pip
-RUN apt-get install -y dos2unix
-RUN apt-get install -y zenity
-RUN apt-get install -y dune
-RUN apt-get install -y scour
-RUN apt-get install -y librsvg2-bin
-RUN apt-get install -y imagemagick
-RUN apt-get install -y xdotool
-RUN apt-get install -y rename # perl rename and not util-linux
-
 # install latest kicad 6.0.*
-RUN sudo add-apt-repository -y ppa:kicad/kicad-6.0-releases
-RUN sudo apt-get install -y kicad
+RUN add-apt-repository -y ppa:kicad/kicad-6.0-releases
+RUN apt-get install -y kicad
+
+# remove some kicad unecessary things (~ 1.8 GB)
+RUN sudo rm -rf /usr/share/kicad/demos/
+RUN sudo rm -rf /usr/share/kicad/3dmodels/
 
 # create kiri user
 RUN useradd -rm -d "/home/kiri" -s "/bin/bash" -g root -G sudo -u 1000 kiri -p kiri
@@ -66,20 +54,15 @@ RUN git clone https://github.com/spaceship-prompt/spaceship-prompt.git "${ZSH_CU
 RUN ln -sf "${ZSH_CUSTOM}/themes/spaceship-prompt/spaceship.zsh-theme" "${ZSH_CUSTOM}/themes/spaceship.zsh-theme"
 RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME="spaceship"/g' "${HOME}/.zshrc"
 
-RUN yes | pip3 install "pillow>8.2.0"
-RUN yes | pip3 install "six>=1.15.0"
-RUN yes | pip3 install "dateutils>=0.6.12"
-RUN yes | pip3 install "python_dateutil>=2.8.1"
-RUN yes | pip3 install "pytz>=2021.1"
-RUN yes | pip3 install "pathlib>=1.0.1"
-RUN yes | pip3 install "wxpython>=4.0.7"
-RUN yes | pip3 install "wxwidgets>=1.0.5"
+ENV PATH "${PATH}:/home/kiri/.local/bin"
 
-# Does not cache form here, (if/when needed)
-ARG CACHEBUST=1
+ARG CACHEBUST_KIRI_DEPENDENCIES=1
 
 # install kiri dependencies
 RUN bash -c "$(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_dependencies.sh)"
+
+# Does not cache form here, (if/when needed)
+ARG CACHEBUST_KIRI=1
 
 # install kiri
 RUN bash -T -c "INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"

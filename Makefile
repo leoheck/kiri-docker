@@ -7,9 +7,14 @@ docker_build: Dockerfile
 	time docker build \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
-docker_build_no_cache: Dockerfile
+docker_build_no_cache_kiri: Dockerfile
 	time docker build \
-		--build-arg CACHEBUST=$(date +%s) \
+		--build-arg CACHEBUST_KIRI=$(date +%s) \
+		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+
+docker_build_no_cache_kiri_deps: Dockerfile
+	time docker build \
+		--build-arg CACHEBUST_KIRI_DEPENDENCIES=$(date +%s) \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 
