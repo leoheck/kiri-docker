@@ -7,7 +7,7 @@ Kiri Docker is a convenient and easy way to run [Kiri](https://github.com/leohec
 
 Kiri Docker works by linking the user project inside the docker. The resulting files are already accessible in the host system making simple to use the host browser to visualize the generated files.
 
-The existing kiri image is hosted in Docker Hub here https://hub.docker.com/repository/docker/leoheck/kiri
+The existing kiri image is hosted in Docker Hub here https://hub.docker.com/r/leoheck/kiri/tags
 
 # Getting the existing docker image
 
