@@ -157,6 +157,8 @@ main()
 	if [[ -n "${repo_path}" ]]; then
 		if [[ "${run_kiri}" == "1" ]]; then
 			read -r -d '' KIRI_SCRIPT <<- EOM
+				source /home/kiri/.profile ;\
+				source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
@@ -165,6 +167,8 @@ main()
 			EOM
 		else
 			read -r -d '' KIRI_SCRIPT <<- EOM
+				source /home/kiri/.profile ;\
+				source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    zsh -i
@@ -174,6 +178,8 @@ main()
 
 	if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
 		read -r -d '' KIRI_SCRIPT <<- EOM
+		    source /home/kiri/.profile ;\
+		    source /home/kiri/.zshrc ;\
 		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 		    kiri ${kiri_args}
 		EOM
@@ -181,6 +187,8 @@ main()
 
 	if [[ -z "${repo_path}" ]]; then
 		read -r -d '' KIRI_SCRIPT <<- EOM
+		    source /home/kiri/.profile ;\
+		    source /home/kiri/.zshrc ;\
 		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1)
 		    zsh -i
 		EOM
