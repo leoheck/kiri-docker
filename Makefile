@@ -1,20 +1,19 @@
 
+dockerfile = Dockerfile
+
 docker_username = leoheck
 docker_repo = kiri
 docker_tagname = latest
 
-docker_build: Dockerfile
+docker_build: $(dockerfile)
 	time docker build \
+		-f $(dockerfile) \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
-docker_build_no_cache_kiri: Dockerfile
+docker_build_no_cache_kiri: $(dockerfile)
 	time docker build \
+		-f $(dockerfile) \
 		--build-arg CACHEBUST_KIRI=$(date +%s) \
-		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
-
-docker_build_no_cache_kiri_deps: Dockerfile
-	time docker build \
-		--build-arg CACHEBUST_KIRI_DEPENDENCIES=$(date +%s) \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 
@@ -41,6 +40,9 @@ remove_all_docker_containers:
 
 remove_all_docker_images:
 	docker rmi $(shell docker images -q | tac)
+
+remove_all:
+	docker system prune
 
 
 .PHONY: run_test
