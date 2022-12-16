@@ -14,6 +14,7 @@ show_help()
 	    -h|--help         Show version
 	    -v|--version      Show version
 	    -d|--dont-run     Do not run kiri
+	    -i|--docker-img   Set docker image, default is leoheck/kiri
 	    -k|--kiri [ARGS]  Kiri arguments delimiter
 
 	REPO_PATH
@@ -82,6 +83,11 @@ command_line_parse()
 				run_kiri=0
 				;;
 
+			-i|--docker-img)
+				docker_image=${2}
+				shift
+				shift
+				;;
 
 			-k|--kiri)
 				shift
@@ -114,7 +120,12 @@ main()
 	repo_dir=$(basename "${repo_path}")
 	docker_repo_path="/home/kiri/${repo_dir}"
 
-	container_img=leoheck/kiri
+	if [[ -z "${docker_image}" ]]; then
+		container_img="leoheck/kiri"
+	else
+		container_img="${docker_image}"
+	fi
+
 	container_name=kiri
 	container_tag=latest
 
@@ -135,10 +146,6 @@ main()
 			echo "Kiri Args: $(echo ${kiri_args} | sed "s/^[ ]\+//g")"
 		fi
 	fi
-
-	# docker stop ${container_name}  &> /dev/null
-	# docker kill ${container_name}  &> /dev/null
-	# docker rm -f ${container_name} &> /dev/null
 
 	# Run these in the host machine
 	XSOCK=/tmp/.X11-unix
