@@ -57,6 +57,7 @@ RUN echo "kiri ALL=(ALL) NOPASSWD:ALL" | tee sudo -a "/etc/sudoers"
 # change user
 USER kiri
 WORKDIR "/home/kiri"
+ENV USER kiri
 ENV DISPLAY :0
 
 ENV PATH "${PATH}:/home/kiri/.local/bin"
