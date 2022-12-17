@@ -142,20 +142,21 @@ main()
 
 	if [[ -z ${version_flag} ]] && [[ -z ${kiri_version_flag} ]]; then
 		echo
-		echo "KiRI Docker"
-		echo "Image: ${container_img}"
-		echo "Container: ${container_name}"
+		echo "| KiRI Docker"
+		echo "| Image: ${container_img}"
+		echo "| Container: ${container_name}"
 
 		if [[ -n "${repo_path}" ]]; then
-			echo "Repo Path: ${repo_path}"
+			echo "| Repo Path: ${repo_path}"
 		fi
 		if [[ -n "${run_cmd}" ]]; then
-			echo "Run Cmd: ${run_cmd}"
+			echo "| Run Cmd: ${run_cmd}"
 			run_cmd="-c \"${run_cmd}\""
 		fi
 		if [[ -n "${repo_path}" ]] && [[ -n "${kiri_args}" ]]; then
-			echo "Kiri Args: $(echo ${kiri_args} | sed "s/^[ ]\+//g")"
+			echo "| Kiri Args: $(echo ${kiri_args} | sed "s/^[ ]\+//g")"
 		fi
+		echo
 	fi
 
 	# Run these in the host machine
@@ -170,7 +171,7 @@ main()
 			read -r -d '' KIRI_SCRIPT <<- EOM
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-			    xvfb-run kiri ${kiri_args} ;\
+			    xvfb-run kiri -i \$(ip) ${kiri_args} ;\
 			    zsh -i
 			EOM
 		else
