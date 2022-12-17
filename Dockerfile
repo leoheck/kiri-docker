@@ -1,14 +1,18 @@
 
 # We are going to use the latest version of ubuntu, of course
-# FROM ubuntu:latest
 FROM ubuntu:22.04
+
+LABEL org.opencontainers.image.authors "Leandor S. Heck <leoheck@gmail.com>"
+LABEL org.opencontainers.image.description "Kicad 6 with KiRI (Kicad Revision Inspector"
+LABEL org.opencontainers.image.url "https://hub.docker.com/r/leoheck/kiri/tags"
+LABEL org.opencontainers.image.documentation "https://github.com/leoheck/kiri-docker"
 
 ARG DEBIAN_FRONTEND noninteractive
 ARG DEBCONF_NOWARNINGS="yes"
 ARG TERM 'dumb'
 
-RUN apt-get update ;\
-	apt-get install -y \
+RUN apt-get update
+RUN apt-get install -y \
 		sudo \
 		git \
 		zsh \
@@ -20,8 +24,8 @@ RUN apt-get update ;\
 		xvfb \
 		opam \
 		build-essential \
-		libgmp-dev \
 		pkg-config \
+		libgmp-dev \
 		util-linux \
 		python-is-python3 \
 		python3-pip \
@@ -29,7 +33,8 @@ RUN apt-get update ;\
 		librsvg2-bin \
 		imagemagick \
 		xdotool \
-		rename ;\
+		rename \
+		bsdmainutils ;\
 	apt-get clean ;\
 	rm -rf /var/lib/apt/lists/* ;\
 	rm -rf /var/tmp/*
@@ -38,18 +43,12 @@ RUN apt-get update ;\
 RUN add-apt-repository -y ppa:kicad/kicad-6.0-releases
 RUN apt-get install --no-install-recommends -y kicad && \
 	apt-get purge -y \
-		kicad-libraries \
-		kicad-packages3d \
-		kicad-footprints \
-		kicad-doc-en \
-		kicad-demos \
-		kicad-templates \
 		software-properties-common ;\
 	apt-get clean ;\
 	rm -rf /var/lib/apt/lists/* ;\
 	rm -rf /var/tmp/*
 
-# create kiri user
+# create user
 RUN useradd -rm -d "/home/kiri" -s "/usr/bin/zsh" -g root -G sudo -u 1000 kiri -p kiri
 
 # run sudo without password
@@ -72,10 +71,10 @@ RUN yes | pip3 install \
 	pip3 cache purge
 
 # opam dependencies
-RUN yes | opam init --disable-sandboxing
-RUN opam switch create 4.10.2
-RUN eval "$(opam env)"
-RUN opam update && \
+RUN yes | opam init --disable-sandboxing && \
+	opam switch create 4.10.2 && \
+	eval "$(opam env)" && \
+	opam update && \
 	opam install -y \
 		digestif \
 		lwt \
@@ -92,37 +91,44 @@ RUN opam update && \
 # oh-my-zsh, please
 RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
 
-ENV ZSH_CUSTOM /home/kiri/.oh-my-zsh/custom
-ENV SPACESHIP_PROMPT_ASYNC false
+# install kiri, kidiff and plotgitsch
+ADD https://api.github.com/repos/leoheck/kiri/git/refs/heads/main kiri_version.json
+ENV KIRI_HOME "/home/kiri/.local/share/"
+RUN git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}/kiri"
+RUN cd "${KIRI_HOME}/kiri/submodules/plotkicadsch" && \
+	opam pin add -y kicadsch . && \
+	opam pin add -y plotkicadsch .  && \
+	opam install -y plotkicadsch; \
+	opam clean -a -c -s --logs -r ;\
+	rm -rf ~/.opam/download-cache ;\
+	rm -rf ~/.opam/repo/*
 
-# oh-my-zsh, spaceship theme
-RUN git clone https://github.com/spaceship-prompt/spaceship-prompt.git "${ZSH_CUSTOM}/themes/spaceship-prompt" --depth=1
-RUN ln -sf "${ZSH_CUSTOM}/themes/spaceship-prompt/spaceship.zsh-theme" "${ZSH_CUSTOM}/themes/spaceship.zsh-theme"
-RUN sed -i 's/ZSH_THEME=.*/ZSH_THEME="spaceship"/g' "${HOME}/.zshrc"
-
-ENV PATH "${PATH}:/home/kiri/.local/bin"
-
-# Does not cache form here, (if/when needed)
-ARG CACHEBUST_KIRI=1
-
-# install kiri
-RUN bash -c "TERM=xterm-256color; INSTALL_KIRI_REMOTELLY=1; $(curl -fsSL https://raw.githubusercontent.com/leoheck/kiri/main/install_kiri.sh)"
+# opam configuration
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# OPAM configuration' | tee -a "${HOME}/.zshrc"
+RUN echo "test -r /home/kiri/.opam/opam-init/init.sh && . /home/kiri/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true" | tee -a "${HOME}/.zshrc"
 
 # kiri environment
-RUN echo '# KIRI' | tee -a "${HOME}/.zshrc"
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# KIRI Environment' | tee -a "${HOME}/.zshrc"
 RUN echo 'export KIRI_HOME=${HOME}/.local/share/kiri' | tee -a "${HOME}/.zshrc"
 RUN echo 'export PATH=${KIRI_HOME}/submodules/KiCad-Diff/bin:${PATH}' | tee -a "${HOME}/.zshrc"
 RUN echo 'export PATH=${KIRI_HOME}/bin:${PATH}' | tee -a "${HOME}/.zshrc"
 
-# RUN awk '/32 host/ { print f } {f=$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1
+# custom commands
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# Custom Commands' | tee -a "${HOME}/.zshrc"
+RUN echo 'function ip() { awk "/32 host/ { print f } {f=\$2}" /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1 | head -n1 }' | tee -a "${HOME}/.zshrc"
+RUN echo 'alias kiri="kiri -i \$(ip)"' | tee -a "${HOME}/.zshrc"
 
-# clean donwloaded and unecessary stuff
-RUN pip cache purge
-RUN opam clean -a -c -s --logs -r ;\
-	rm -rf ~/.opam/download-cache ;\
-	rm -rf ~/.opam/repo/*
+# clean unnecessary stuff
 RUN sudo apt-get purge -y \
-		curl
+		curl \
+		opam \
+		build-essential \
+		pkg-config \
+		libgmp-dev
+RUN sudo apt-get -y autoremove
 RUN sudo rm -rf \
 		/tmp/* \
 		/var/tmp/* \
@@ -133,5 +139,3 @@ RUN sudo rm -rf \
 # initialize kicad config files to skip default popups of setup
 COPY config /home/kiri/.config
 RUN sudo chown -R kiri /home/kiri/.config
-
-CMD zsh
