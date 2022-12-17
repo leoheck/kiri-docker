@@ -15,6 +15,7 @@ show_help()
 	    -v|--version      Show version
 	    -d|--dont-run     Do not run kiri
 	    -i|--docker-img   Set docker image, default is leoheck/kiri
+	    -c|--cmd "CMD"    Run a command given in string
 	    -k|--kiri [ARGS]  Kiri arguments delimiter
 
 	REPO_PATH
@@ -89,6 +90,12 @@ command_line_parse()
 				shift
 				;;
 
+			-c|--cmd)
+				run_cmd="${2}"
+				shift
+				shift
+				;;
+
 			-k|--kiri)
 				shift
 				kiri_args="${kiri_args} ${@}"
@@ -135,12 +142,16 @@ main()
 
 	if [[ -z ${version_flag} ]] && [[ -z ${kiri_version_flag} ]]; then
 		echo
-		echo "Kiri Docker"
+		echo "KiRI Docker"
 		echo "Image: ${container_img}"
 		echo "Container: ${container_name}"
 
 		if [[ -n "${repo_path}" ]]; then
 			echo "Repo Path: ${repo_path}"
+		fi
+		if [[ -n "${run_cmd}" ]]; then
+			echo "Run Cmd: ${run_cmd}"
+			run_cmd="-c \"${run_cmd}\""
 		fi
 		if [[ -n "${repo_path}" ]] && [[ -n "${kiri_args}" ]]; then
 			echo "Kiri Args: $(echo ${kiri_args} | sed "s/^[ ]\+//g")"
@@ -157,20 +168,14 @@ main()
 	if [[ -n "${repo_path}" ]]; then
 		if [[ "${run_kiri}" == "1" ]]; then
 			read -r -d '' KIRI_SCRIPT <<- EOM
-				source /home/kiri/.profile ;\
-				source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
-			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-			    xvfb-run kiri --ip \${ip_addr} ${kiri_args} ;\
+			    xvfb-run kiri ${kiri_args} ;\
 			    zsh -i
 			EOM
 		else
 			read -r -d '' KIRI_SCRIPT <<- EOM
-				source /home/kiri/.profile ;\
-				source /home/kiri/.zshrc ;\
 			    cd "${docker_repo_path}" || exit 1 ;\
-			    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 			    zsh -i
 			EOM
 		fi
@@ -178,19 +183,13 @@ main()
 
 	if [[ -n "${version_flag}" ]] || [[ -n "${kiri_version_flag}" ]]; then
 		read -r -d '' KIRI_SCRIPT <<- EOM
-		    source /home/kiri/.profile ;\
-		    source /home/kiri/.zshrc ;\
-		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1) ;\
 		    kiri ${kiri_args}
 		EOM
 	fi
 
 	if [[ -z "${repo_path}" ]]; then
 		read -r -d '' KIRI_SCRIPT <<- EOM
-		    source /home/kiri/.profile ;\
-		    source /home/kiri/.zshrc ;\
-		    export ip_addr=\$(awk '/32 host/ {print f} {f=\$2}' /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1)
-		    zsh -i
+		    zsh -i ${run_cmd}
 		EOM
 	fi
 
