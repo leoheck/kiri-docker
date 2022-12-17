@@ -9,12 +9,14 @@ docker_build: $(dockerfile)
 	time docker build \
 		-f $(dockerfile) \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	docker images
 
 docker_build_no_cache: $(dockerfile)
 	time docker build \
 		-f $(dockerfile) \
 		--no-cache \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
+	docker images
 
 
 docker_login:
@@ -22,6 +24,7 @@ docker_login:
 
 docker_push: docker_build
 	docker push $(docker_username)/$(docker_repo):$(docker_tagname)
+
 
 
 # get the latest kiri image from docker hub
@@ -36,13 +39,16 @@ stop_all_docker_containers:
 	docker ps -q || docker kill $(shell docker ps -q)
 
 remove_all_docker_containers:
-	docker rm $(shell docker ps -a -q)
+	docker ps -a -q || docker rm $(shell docker ps -a -q)
 
 remove_all_docker_images:
-	docker rmi $(shell docker images -q | tac)
+	docker images -q || docker rmi $(shell docker images -q | tac)
 
-remove_all:
-	docker system prune
+system_prune:
+	make stop_all_docker_containers
+	make remove_all_docker_containers
+	make remove_all_docker_images
+	yes | docker system prune
 
 
 .PHONY: run_test
