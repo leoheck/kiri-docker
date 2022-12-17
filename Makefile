@@ -10,10 +10,10 @@ docker_build: $(dockerfile)
 		-f $(dockerfile) \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
-docker_build_no_cache_kiri: $(dockerfile)
+docker_build_no_cache: $(dockerfile)
 	time docker build \
 		-f $(dockerfile) \
-		--build-arg CACHEBUST_KIRI=$(date +%s) \
+		--no-cache \
 		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
 
 
