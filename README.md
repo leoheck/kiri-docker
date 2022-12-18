@@ -76,3 +76,10 @@ This, just launch the container without binding any local folder
 ```bash
 kiri
 ```
+
+Start docker with binding project's repo, do not run kiri, and run pcbdraw command:
+This example uses the image generated with `Dockerfile_kicad-auto`.
+
+```bash
+./kiri "/home/lheck/Documents/assoc-board" -i leoheck/kiri:test -d -c "pcbdraw board.kicad_pcb board.svg"
+```
