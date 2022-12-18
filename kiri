@@ -11,12 +11,12 @@ show_help()
 
 	OPTIONS
 
-	    -h|--help         Show version
-	    -v|--version      Show version
-	    -d|--dont-run     Do not run kiri
-	    -i|--docker-img   Set docker image, default is leoheck/kiri
-	    -c|--cmd "CMD"    Run a command given in string
-	    -k|--kiri [ARGS]  Kiri arguments delimiter
+	    -h|--help            Show version
+	    -v|--version         Show version
+	    -d|--dont-run        Do not run kiri
+	    -i|--docker-img IMG  Set docker image, default is leoheck/kiri:tag
+	    -c|--cmd CMD         Run a command given in string
+	    -k|--kiri ARGS       Pass string with arguments to Kiri
 
 	REPO_PATH
 
