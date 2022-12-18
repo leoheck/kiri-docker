@@ -177,7 +177,7 @@ main()
 		else
 			read -r -d '' KIRI_SCRIPT <<- EOM
 			    cd "${docker_repo_path}" || exit 1 ;\
-			    zsh -i
+			    zsh -i ${run_cmd}
 			EOM
 		fi
 	fi
