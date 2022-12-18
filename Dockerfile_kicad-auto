@@ -1,60 +1,203 @@
 
-dockerfile = Dockerfile
+# We are going to use the latest version of ubuntu, of course
+FROM ubuntu:22.04
 
-docker_username = leoheck
-docker_repo = kiri
-docker_tagname = test
+LABEL org.opencontainers.image.authors "Leandor S. Heck <leoheck@gmail.com>"
+LABEL org.opencontainers.image.description "Kicad 6 with KiRI (Kicad Revision Inspector"
+LABEL org.opencontainers.image.url "https://hub.docker.com/r/leoheck/kiri/tags"
+LABEL org.opencontainers.image.documentation "https://github.com/leoheck/kiri-docker"
 
-docker_build: $(dockerfile)
-	time docker build \
-		-f $(dockerfile) \
-		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
-	docker images
+ARG DEBIAN_FRONTEND noninteractive
+ARG DEBCONF_NOWARNINGS="yes"
+ARG TERM 'dumb'
 
-docker_build_no_cache: $(dockerfile)
-	time docker build \
-		-f $(dockerfile) \
-		--no-cache \
-		--tag $(docker_username)/$(docker_repo):$(docker_tagname) .
-	docker images
+RUN apt-get update
+RUN apt-get install -y \
+		sudo \
+		git \
+		zsh \
+		curl \
+		coreutils \
+		software-properties-common \
+		x11-utils \
+		x11-xkb-utils \
+		xvfb \
+		opam \
+		build-essential \
+		pkg-config \
+		libgmp-dev \
+		util-linux \
+		python-is-python3 \
+		python3-pip \
+		dos2unix \
+		librsvg2-bin \
+		imagemagick \
+		xdotool \
+		rename \
+		bsdmainutils ;\
+	apt-get clean ;\
+	rm -rf /var/lib/apt/lists/* ;\
+	rm -rf /var/tmp/*
+
+# install latest kicad 6.0.*
+RUN add-apt-repository -y ppa:kicad/kicad-6.0-releases
+RUN apt-get install --no-install-recommends -y kicad && \
+	apt-get purge -y \
+		software-properties-common ;\
+	apt-get clean ;\
+	rm -rf /var/lib/apt/lists/* ;\
+	rm -rf /var/tmp/*
+
+# create user
+RUN useradd -rm -d "/home/kiri" -s "/usr/bin/zsh" -g root -G sudo -u 1000 kiri -p kiri
+
+# run sudo without password
+RUN echo "kiri ALL=(ALL) NOPASSWD:ALL" | tee sudo -a "/etc/sudoers"
+
+# change user
+USER kiri
+WORKDIR "/home/kiri"
+ENV USER kiri
+ENV DISPLAY :0
+
+ENV PATH "${PATH}:/home/kiri/.local/bin"
+
+# python dependencies
+RUN yes | pip3 install \
+		"pillow>8.2.0" \
+		"six>=1.15.0" \
+		"python_dateutil>=2.8.1" \
+		"pytz>=2021.1" \
+		"pathlib>=1.0.1" && \
+	pip3 cache purge
+
+# opam dependencies
+RUN yes | opam init --disable-sandboxing && \
+	opam switch create 4.10.2 && \
+	eval "$(opam env)" && \
+	opam update && \
+	opam install -y \
+		digestif \
+		lwt \
+		lwt_ppx \
+		cmdliner \
+		base64 \
+		sha \
+		tyxml \
+		git-unix ;\
+	opam clean -a -c -s --logs -r ;\
+	rm -rf ~/.opam/download-cache ;\
+	rm -rf ~/.opam/repo/*
+
+# oh-my-zsh, please
+RUN zsh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" || true
+
+# install kiri, kidiff and plotgitsch
+ADD https://api.github.com/repos/leoheck/kiri/git/refs/heads/main kiri_version.json
+ENV KIRI_HOME "/home/kiri/.local/share/"
+RUN git clone --recurse-submodules -j8 https://github.com/leoheck/kiri.git "${KIRI_HOME}/kiri"
+RUN cd "${KIRI_HOME}/kiri/submodules/plotkicadsch" && \
+	opam pin add -y kicadsch . && \
+	opam pin add -y plotkicadsch .  && \
+	opam install -y plotkicadsch; \
+	opam clean -a -c -s --logs -r ;\
+	rm -rf ~/.opam/download-cache ;\
+	rm -rf ~/.opam/repo/*
+
+# opam configuration
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# OPAM configuration' | tee -a "${HOME}/.zshrc"
+RUN echo "test -r /home/kiri/.opam/opam-init/init.sh && . /home/kiri/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true" | tee -a "${HOME}/.zshrc"
+
+# kiri environment
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# KIRI Environment' | tee -a "${HOME}/.zshrc"
+RUN echo 'export KIRI_HOME=${HOME}/.local/share/kiri' | tee -a "${HOME}/.zshrc"
+RUN echo 'export PATH=${KIRI_HOME}/submodules/KiCad-Diff/bin:${PATH}' | tee -a "${HOME}/.zshrc"
+RUN echo 'export PATH=${KIRI_HOME}/bin:${PATH}' | tee -a "${HOME}/.zshrc"
+
+# custom commands
+RUN echo | tee -a "${HOME}/.zshrc"
+RUN echo '# Custom Commands' | tee -a "${HOME}/.zshrc"
+RUN echo 'function ip() { awk "/32 host/ { print f } {f=\$2}" /proc/net/fib_trie | sort | uniq | grep -v 127.0.0.1 | head -n1 }' | tee -a "${HOME}/.zshrc"
+RUN echo 'alias kiri="kiri -i \$(ip)"' | tee -a "${HOME}/.zshrc"
+
+# clean unnecessary stuff
+RUN sudo apt-get purge -y \
+		curl \
+		opam \
+		build-essential \
+		pkg-config \
+		libgmp-dev
+RUN sudo apt-get -y autoremove
+RUN sudo rm -rf \
+		/tmp/* \
+		/var/tmp/* \
+		/usr/share/doc/* \
+		/usr/share/info/* \
+		/usr/share/man/*
+
+# initialize kicad config files to skip default popups of setup
+COPY config /home/kiri/.config
+RUN sudo chown -R kiri /home/kiri/.config
 
 
-docker_login:
-	docker login
+ARG DEBIAN_FRONTEND noninteractive
 
-docker_push: docker_build
-	docker push $(docker_username)/$(docker_repo):$(docker_tagname)
+RUN sudo apt-get update && \
+	sudo apt-get install -y \
+		apt-utils && \
+	sudo apt-get install -y \
+		unrar-free \
+		wget \
+		curl \
+		bzip2 \
+		librsvg2-bin \
+		ghostscript && \
+	sudo apt-get install -y --no-install-recommends \
+		python3-qrcodegen \
+		poppler-utils && \
+	curl -s https://api.github.com/repos/INTI-CMNB/KiAuto/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/INTI-CMNB/KiBoM/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/INTI-CMNB/InteractiveHtmlBom/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/INTI-CMNB/PcbDraw/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/hildogjr/KiCost/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/INTI-CMNB/KiBot/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/set-soft/kicost-digikey-api-v3/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i - && \
+	curl -s https://api.github.com/repos/INTI-CMNB/kicad-git-filters/releases/latest | grep "browser_download_url.*deb" | cut -d : -f 2,3 | tr -d \" | wget -i -
 
+RUN sudo ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+RUN sudo apt-get install -y --no-install-recommends tzdata
 
+RUN sudo apt install -y --no-install-recommends \
+	./python3-pymeta_0.5.1-1_all.deb \
+	./python3-pcbnewtransition_0.2.0-1_all.deb \
+	./python3-pybars_0.9.7-1_all.deb \
+	./python3-svgpathtools_1.4.1-1_all.deb \
+	./python3-validators_0.14.2-2_all.deb \
+	./kiauto_2.1.0-1_all.deb \
+	./kibom.inti-cmnb_1.8.0-3_all.deb \
+	./interactivehtmlbom.inti-cmnb_2.5.0-2_all.deb \
+	./pcbdraw_0.9.0-5_all.deb \
+	./kicost-digikey-api-v3_0.1.1-1_all.deb \
+	./kicost-digikey-api-v3_0.1.2-1_all.deb \
+	./kibot_1.5.1-1_all.deb \
+	./kicad-git-filters_1.0.1-1_all.deb && \
+	sudo rm *.deb && \
+	sudo apt-get purge -y \
+		apt-utils \
+		wget \
+		curl && \
+	sudo apt-get -y autoremove && \
+	sudo rm -rf /var/lib/apt/lists/*
 
-# get the latest kiri image from docker hub
-docker_pull:
-	docker pull $(docker_username)/$(docker_repo):$(docker_tagname)
+RUN	sudo sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<!-- <policy domain="coder" rights="none" pattern="PDF" \/> -->/g' /etc/ImageMagick-6/policy.xml && \
+	sudo sed -i 's/<policy domain="coder" rights="none" pattern="PS" \/>/<!-- <policy domain="coder" rights="none" pattern="PS" \/> -->/g' /etc/ImageMagick-6/policy.xml
 
-
-show_containers:
-	docker ps -a
-
-stop_all_docker_containers:
-	docker ps -q || docker kill $(shell docker ps -q)
-
-remove_all_docker_containers:
-	docker ps -a -q || docker rm $(shell docker ps -a -q)
-
-remove_all_docker_images:
-	docker images -q || docker rmi $(shell docker images -q | tac)
-
-system_prune:
-	make stop_all_docker_containers
-	make remove_all_docker_containers
-	make remove_all_docker_images
-	yes | docker system prune
-
-
-.PHONY: run_test
-
-testcase_path = "/home/lheck/Documents/assoc-board"
-
-# Don't use this target, this is just my own test case
-run_test:
-	./kiri $(testcase_path)
+RUN sudo apt-get -y autoremove
+RUN sudo rm -rf \
+		/tmp/* \
+		/var/tmp/* \
+		/usr/share/doc/* \
+		/usr/share/info/* \
+		/usr/share/man/*
