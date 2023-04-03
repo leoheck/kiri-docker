@@ -15,8 +15,8 @@ show_help()
 	    -v|--version         Show version
 	    -d|--dont-run        Do not run kiri
 	    -i|--docker-img IMG  Set docker image, default is leoheck/kiri:tag
-	    -c|--cmd CMD         Run a command given in string
-	    -k|--kiri ARGS       Pass string with arguments to Kiri
+	    -c|--cmd CMD         Run a command given by a string
+	    -k|--kiri ARGS       Pass a string with arguments to Kiri
 
 	REPO_PATH
 
