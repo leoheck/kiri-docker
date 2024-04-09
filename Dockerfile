@@ -40,7 +40,7 @@ RUN apt-get install -y \
 	rm -rf /var/tmp/*
 
 # Install latest Kicad
-RUN add-apt-repository -y ppa:kicad/kicad-7.0-releases
+RUN add-apt-repository -y ppa:kicad/kicad-8.0-releases
 RUN apt-get install --no-install-recommends -y kicad && \
 	apt-get purge -y \
 		software-properties-common ;\
