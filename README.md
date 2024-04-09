@@ -30,7 +30,7 @@ It is also possible to build the docker image yourself, if needed:
 ```bash
 gh repo clone leoheck/kiri-docker
 cd kiri-docker
-make build
+make docker_build
 ```
 
 # Environment
