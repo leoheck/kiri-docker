@@ -3,7 +3,7 @@
 FROM ubuntu:22.04
 
 LABEL org.opencontainers.image.authors "Leandro Heck <leoheck@gmail.com>"
-LABEL org.opencontainers.image.description "Kicad 8s and KiRI"
+LABEL org.opencontainers.image.description "Kicad 8 and KiRI"
 LABEL org.opencontainers.image.url "https://hub.docker.com/r/leoheck/kiri/main"
 LABEL org.opencontainers.image.documentation "https://github.com/leoheck/kiri-docker"
 
