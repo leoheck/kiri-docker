@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.description "Kicad 7 and KiRI"
 LABEL org.opencontainers.image.url "https://hub.docker.com/r/leoheck/kiri/main"
 LABEL org.opencontainers.image.documentation "https://github.com/leoheck/kiri-docker"
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 ARG DEBCONF_NOWARNINGS="yes"
 ARG TERM 'dumb'
 
