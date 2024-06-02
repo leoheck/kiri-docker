@@ -19,8 +19,12 @@ docker_build_no_cache: $(dockerfile)
 	docker images
 
 
+docker_setup:
+# 	-sudo groupadd docker
+	sudo usermod -aG docker $(USER)
+
 docker_login:
-	docker login
+	docker login --username $(docker_username)
 
 docker_push: docker_build
 	docker push $(docker_username)/$(docker_repo):$(docker_tagname)
