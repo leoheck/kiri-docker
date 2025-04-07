@@ -38,7 +38,7 @@ make docker_build
 Download or build the docker image and then set your PATH to this repo with:
 
 ```bash
-export PATH="$(pwd)/kiri-docker/"
+export PATH=$PATH:{PATH-TO-THIS-REPO}
 ```
 
 # Using Kiri Docker
