@@ -11,14 +11,7 @@ The existing kiri-docker image is hosted in Docker Hub here https://hub.docker.c
 
 # Getting the existing docker image
 
-The docker container can be donwloaded through this repo with:
-
-```bash
-gh repo clone leoheck/kiri-docker
-make docker_pull
-```
-
-Alternatively, you can pull the latest image file with:
+You can pull the latest image file with:
 ```bash
 docker pull leoheck/kiri:latest
 ```
