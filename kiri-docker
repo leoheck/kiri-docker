@@ -171,6 +171,7 @@ main()
 			read -r -d '' KIRI_SCRIPT <<- EOM
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
+                            git config --global --add safe.directory "${docker_repo_path}" ;\
 			    xvfb-run kiri -i \$(ip) ${kiri_args} ;\
 			    zsh -i
 			EOM
