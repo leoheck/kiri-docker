@@ -171,7 +171,7 @@ main()
 			read -r -d '' KIRI_SCRIPT <<- EOM
 			    cd "${docker_repo_path}" || exit 1 ;\
 			    sudo -H Xvfb -f \${DISPLAY} -screen 0 1280x800x24 -ac -dpi 96 +extension RANDR :1 > /dev/null 2>&1 \& ;\
-			    xvfb-run kiri -i \$(ip) ${kiri_args} ;\
+			    xvfb-run kiri -i localhost ${kiri_args} ;\
 			    zsh -i
 			EOM
 		else
@@ -201,6 +201,7 @@ main()
 			-e DISPLAY \
 			--hostname="kiri" \
 			--net=bridge \
+			-p 8080:8080 \
 			--name ${container_name} \
 			--mount type=bind,source="${repo_path}",target="${docker_repo_path}" \
 			-v ${XSOCK}:${XSOCK} \
@@ -215,6 +216,7 @@ main()
 			-e DISPLAY \
 			--hostname="kiri" \
 			--net=bridge \
+			-p 8080:8080 \
 			--name ${container_name} \
 			-v ${XSOCK}:${XSOCK} \
 			-v ${XAUTH}:${XAUTH} \
